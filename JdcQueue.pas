@@ -9,18 +9,15 @@ type
   private
     FList: TList<T>;
     FPos: Integer;
-
+    CritSect: TRTLCriticalSection;
   public
-    procedure Enqueue(AItem: T);
+    procedure Enqueue(const AItem: T);
     function Dequeue: T;
     function Count: Integer;
 
     constructor Create;
     destructor Destroy; override;
   end;
-
-var
-  CritSect: TRTLCriticalSection;
 
 implementation
 
@@ -33,6 +30,7 @@ end;
 
 constructor TCircularQueue<T>.Create;
 begin
+  InitializeCriticalSection(CritSect);
   FList := TList<T>.Create;
   FPos := 0;
 end;
@@ -65,20 +63,14 @@ begin
   end;
 
   FList.Free;
+
+  DeleteCriticalSection(CritSect);
   inherited;
 end;
 
-procedure TCircularQueue<T>.Enqueue(AItem: T);
+procedure TCircularQueue<T>.Enqueue(const AItem: T);
 begin
   FList.Add(AItem);
 end;
-
-initialization
-
-InitializeCriticalSection(CritSect);
-
-finalization
-
-DeleteCriticalSection(CritSect);
 
 end.
